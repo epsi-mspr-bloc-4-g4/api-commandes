@@ -2,7 +2,7 @@ import express from "express";
 import * as dotevnv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
-import { orderRouter } from "./order.route";
+import { orderRouter } from "./order.routes";
 
 dotevnv.config();
 
