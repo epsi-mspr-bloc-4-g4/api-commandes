@@ -22,6 +22,10 @@ app.use(helmet());
 
 app.use("/", orderRouter);
 
+app.use((req, res) => {
+  res.status(404).send({ message: 'Bad request' });
+});
+
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
