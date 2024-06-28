@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: npm install --include=dev
       - name : Test and coverage
-        run: jest --coverage --verbose
+        run: npm test
       - name : Sonar Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
