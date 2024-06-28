@@ -1,17 +1,40 @@
-import { consumer, producer } from "./kafkaconfig";
+import { consumer } from "./kafkaconfig";
 
-export const consumeMessages = async (topic: string) => {
+interface KafkaMessage {
+  topic: string;
+  partition: number;
+  offset: string;
+  value: string;
+}
+
+let isRunning = false;
+let messages: KafkaMessage[] = [];
+
+export const consumeMessages = async (topic: string): Promise<KafkaMessage[]> => {
+  if (isRunning) {
+    console.log("Consumer is already running");
+    return messages;
+  }
+
   await consumer.connect();
-  await consumer.subscribe({ topic: topic, fromBeginning: true });
+  await consumer.subscribe({ topic });
+
+  console.log("START?");
+  isRunning = true;
+  messages = []; // Reset messages for each new consumption
 
   await consumer.run({
+    autoCommit: false,
     eachMessage: async ({ topic, partition, message }) => {
-      console.log({
+      messages.push({
+        topic,
         partition,
         offset: message.offset,
-        value: message.value?.toString(),
+        value: message.value?.toString() || "",
       });
     },
   });
-  await consumer.disconnect();
+
+  console.log("END?");
+  return messages;
 };

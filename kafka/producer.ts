@@ -10,6 +10,21 @@ export const produceMessage = async (topic: string, message: string) => {
 };
 
 export const fetchProductsForOrder = async (orderId: string) => {
-  const message =  orderId ;
-  await produceMessage('order-products-fetch', message);
+  try {
+    await producer.connect(); // Ensure producer is connected before sending messages
+
+    // Example message sending
+    await producer.send({
+      topic: "order-products-fetch",
+      messages: [
+        { key: "orderId", value: JSON.stringify({ orderId }) }
+      ]
+    });
+
+    // Disconnect the producer when finished sending messages
+    await producer.disconnect();
+  } catch (error) {
+    console.error("Error sending message to Kafka:", error);
+    throw error; // Propagate the error upwards
+  }
 };

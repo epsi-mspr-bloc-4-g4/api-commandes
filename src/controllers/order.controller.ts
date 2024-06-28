@@ -1,28 +1,35 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { fetchProductsForOrder } from '../../kafka/producer';
+import { fetchProductsForOrder, produceMessage } from '../../kafka/producer';
 import { consumeMessages } from "../../kafka/consumer";
 
 const prisma = new PrismaClient();
 
 // Création d'une nouvelle commande
+let consumerInitialized = false;
+
 export const createOrder = async (req: Request, res: Response) => {
-    try {
-      console.log(await consumeMessages("order-products-fetch"))
-      const { orderProducts, customerId } = req.body;
-      const newOrder = await prisma.order.create({
-        data: {
-          createdAt: new Date(),
-          customerId,
-          orderProducts, 
-        },
-      });
-      res.json(newOrder);
-    } catch (error) {
-      res.status(500).json({ error: "Something went wrong" });
-      console.log(error);
+  try {
+    if (!consumerInitialized) {
+      await consumeMessages("order-products-fetch");
+      consumerInitialized = true;
     }
-  };
+
+    const { orderProducts, customerId } = req.body;
+    const newOrder = await prisma.order.create({
+      data: {
+        createdAt: new Date(),
+        customerId,
+        orderProducts,
+      },
+    });
+
+    res.json(newOrder);
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong" });
+    console.log(error);
+  }
+};
 
 // Récupération de toutes les commandes
 export const getAllOrders = async (req: Request, res: Response) => {
@@ -84,12 +91,37 @@ export const deleteOrder = async (req: Request, res: Response) => {
   }
 };
 
+// Récupération des produits d'une commande
+let messages: any[] = []; // Array to store consumed messages
+
 export const getOrderProducts = async (req: Request, res: Response) => {
-  const { orderId } = req.params;
+  try {
+    const { orderId, id } = req.params;
 
-  await fetchProductsForOrder(orderId);
+    await fetchProductsForOrder(orderId);
 
-  await consumeMessages("order-products-response");
+    if (!consumerInitialized) {
+      messages = await consumeMessages("order-products-response");
+      consumerInitialized = true;
+    }
 
+    // Parse messages to JSON
+    const products = messages.map(message => JSON.parse(message.value));
 
+    if (id) {
+      // If a specific product ID is provided, find that product
+      const product = products.find(product => product.id === id);
+      if (product) {
+        res.json(product);
+      } else {
+        res.status(404).json({ error: "Product not found" });
+      }
+    } else {
+      // Otherwise, return all products for the order
+      res.json(products);
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong" });
+    console.log(error);
+  }
 };
