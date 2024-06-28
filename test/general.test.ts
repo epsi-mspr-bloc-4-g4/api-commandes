@@ -1,5 +1,5 @@
 import request from 'supertest';
-const baseURL = 'http://localhost:3000'; // Adjust this to your actual API base URL
+const baseURL = 'http://localhost:7000';
 
 describe('Order API endpoints integration tests', () => {
   it("GET /api/orders : should return 200 and an array of orders", async () => {

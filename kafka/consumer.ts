@@ -1,4 +1,4 @@
-import { consumer } from "./kafkaconfig";
+import { consumer, producer } from "./kafkaconfig";
 
 export const consumeMessages = async (topic: string) => {
   await consumer.connect();
@@ -11,7 +11,7 @@ export const consumeMessages = async (topic: string) => {
         offset: message.offset,
         value: message.value?.toString(),
       });
-      // Traitez le message ici
     },
   });
+  await consumer.disconnect();
 };

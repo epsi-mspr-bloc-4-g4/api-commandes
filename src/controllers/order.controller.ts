@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { fetchProductsForOrder } from '../../kafka/producer';
+import { consumeMessages } from "../../kafka/consumer";
 
 const prisma = new PrismaClient();
 
 // Création d'une nouvelle commande
 export const createOrder = async (req: Request, res: Response) => {
     try {
+      console.log(await consumeMessages("order-products-fetch"))
       const { orderProducts, customerId } = req.body;
       const newOrder = await prisma.order.create({
         data: {
@@ -81,11 +84,12 @@ export const deleteOrder = async (req: Request, res: Response) => {
   }
 };
 
-/* 
+export const getOrderProducts = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
 
-À IMPLEMENTER 
+  await fetchProductsForOrder(orderId);
 
-/orders/1/products/ = Products de l’Order 1
-/orders/1/products/51 = Product 51 de l’Order 1
+  await consumeMessages("order-products-response");
 
-*/
+
+};
