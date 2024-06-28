@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=dev
       - name : Test and coverage
         run: jest --coverage --verbose
       - name : Sonar Scan
