@@ -1,4 +1,7 @@
 import { consumer } from "./kafkaconfig";
+import * as dotevnv from "dotenv";
+
+dotevnv.config();
 
 interface KafkaMessage {
   topic: string;
@@ -10,9 +13,10 @@ interface KafkaMessage {
 let isRunning = false;
 let messages: KafkaMessage[] = [];
 
-export const consumeMessages = async (topic: string): Promise<KafkaMessage[]> => {
+export const consumeMessages = async (
+  topic: string
+): Promise<KafkaMessage[]> => {
   if (isRunning) {
-    console.log("Consumer is already running");
     return messages;
   }
 
@@ -27,14 +31,17 @@ export const consumeMessages = async (topic: string): Promise<KafkaMessage[]> =>
     autoCommit: false,
     eachMessage: async ({ topic, partition, message }) => {
       messages.push({
-        topic,
-        partition,
+        topic: topic,
+        partition: partition,
         offset: message.offset,
         value: message.value?.toString() || "",
       });
     },
   });
 
-  console.log("END?");
+  await new Promise((resolve) =>
+    setTimeout(resolve, Number(process.env.DEFAULT_SET_TIMEOUT))
+  ); // attendre 5 secondes
+
   return messages;
 };

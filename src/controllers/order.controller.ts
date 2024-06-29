@@ -1,30 +1,30 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { fetchProductsForOrder, produceMessage } from '../../kafka/producer';
+import { fetchProductsForOrder, produceMessage } from "../../kafka/producer";
 import { consumeMessages } from "../../kafka/consumer";
 
 const prisma = new PrismaClient();
 
-// Création d'une nouvelle commande
-let consumerInitialized = false;
-
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    if (!consumerInitialized) {
-      await consumeMessages("order-products-fetch");
-      consumerInitialized = true;
-    }
+    // if (!consumerInitialized) {
+    let messages = await consumeMessages("order-products-fetch");
 
-    const { orderProducts, customerId } = req.body;
-    const newOrder = await prisma.order.create({
-      data: {
-        createdAt: new Date(),
-        customerId,
-        orderProducts,
-      },
-    });
+    console.log("messages ORDER :: ", messages);
+    //   consumerInitialized = true;
+    // }
 
-    res.json(newOrder);
+    // const { orderProducts, customerId } = req.body;
+    // const newOrder = await prisma.order.create({
+    //   data: {
+    //     createdAt: new Date(),
+    //     customerId,
+    //     orderProducts,
+    //   },
+    // });
+
+    // res.json(newOrder);
+    res.json("I deleted Prisma code for now.");
   } catch (error) {
     res.status(500).json({ error: "Something went wrong" });
     console.log(error);
@@ -37,11 +37,12 @@ export const getAllOrders = async (req: Request, res: Response) => {
     const orders = await prisma.order.findMany({
       include: {
         orderProducts: true,
-      }
+      },
     });
+
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Something went wrong : " + error });
   }
 };
 
@@ -100,17 +101,14 @@ export const getOrderProducts = async (req: Request, res: Response) => {
 
     await fetchProductsForOrder(orderId);
 
-    if (!consumerInitialized) {
-      messages = await consumeMessages("order-products-response");
-      consumerInitialized = true;
-    }
+    messages = await consumeMessages("order-products-response");
 
     // Parse messages to JSON
-    const products = messages.map(message => JSON.parse(message.value));
+    const products = messages.map((message) => JSON.parse(message.value));
 
     if (id) {
       // If a specific product ID is provided, find that product
-      const product = products.find(product => product.id === id);
+      const product = products.find((product) => product.id === id);
       if (product) {
         res.json(product);
       } else {
