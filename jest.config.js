@@ -1,7 +1,6 @@
 // Jest configuration file
 module.exports = {
     preset: 'ts-jest',
-    transform: {},
     testEnvironment: 'node',
     setupFilesAfterEnv: ['@babel/register'],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
