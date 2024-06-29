@@ -3,7 +3,6 @@ import * as dotevnv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import orderRouter from "./routes/order.routes";
-import { errorHandler } from "./middlewares/errorHandler";
 import { produceMessage } from "../kafka/producer";
 import { consumeMessages } from "../kafka/consumer";
 
