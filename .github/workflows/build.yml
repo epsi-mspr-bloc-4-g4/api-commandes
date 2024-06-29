@@ -39,9 +39,9 @@ jobs:
             sleep 1
           done
 
-          # Apply migrations or seed data if needed
-          # Replace with your actual Prisma migration or seeding command
-          npm run prisma:migrate:dev
+          # Generate and apply migrations
+          npx prisma generate
+          npx prisma migrate dev --name init
 
       - name: Run tests
         run: npm test
