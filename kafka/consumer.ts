@@ -25,7 +25,7 @@ export const consumeMessages = async (
 
   console.log("START?");
   isRunning = true;
-  messages = []; // Reset messages for each new consumption
+  messages = [];
 
   await consumer.run({
     autoCommit: false,

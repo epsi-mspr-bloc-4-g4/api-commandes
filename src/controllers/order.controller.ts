@@ -5,26 +5,44 @@ import { consumeMessages } from "../../kafka/consumer";
 
 const prisma = new PrismaClient();
 
+type InputOrder = {
+  customerId: number;
+  orderedProductsName: string[];
+};
+
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    // if (!consumerInitialized) {
-    let messages = await consumeMessages("order-products-fetch");
+    const messages = await consumeMessages("order-products-fetch");
 
-    console.log("messages ORDER :: ", messages);
-    //   consumerInitialized = true;
-    // }
+    const latestProducts = JSON.parse(messages[messages.length - 1].value);
 
-    // const { orderProducts, customerId } = req.body;
-    // const newOrder = await prisma.order.create({
-    //   data: {
-    //     createdAt: new Date(),
-    //     customerId,
-    //     orderProducts,
-    //   },
-    // });
+    const { orderedProductsName, customerId }: InputOrder = req.body;
 
-    // res.json(newOrder);
-    res.json("I deleted Prisma code for now.");
+    const filteredProducts = latestProducts.filter((product: any) =>
+      orderedProductsName.includes(product.name)
+    );
+
+    const newOrder = await prisma.order.create({
+      data: {
+        createdAt: new Date(),
+        customerId,
+      },
+    });
+
+    const orderProducts = filteredProducts.map(async (product: any) => {
+      await prisma.orderProduct.create({
+        data: {
+          productId: product.id,
+          order: {
+            connect: {
+              id: newOrder.id,
+            },
+          },
+        },
+      });
+    });
+
+    res.json(orderProducts);
   } catch (error) {
     res.status(500).json({ error: "Something went wrong" });
     console.log(error);
@@ -34,10 +52,30 @@ export const createOrder = async (req: Request, res: Response) => {
 // Récupération de toutes les commandes
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    const orders = await prisma.order.findMany({
-      include: {
-        orderProducts: true,
-      },
+    const messages = await consumeMessages("order-products-fetch");
+
+    const latestProducts = JSON.parse(messages[messages.length - 1].value);
+
+    const orderProducts = await prisma.orderProduct.findMany();
+
+    let orders: any[] = [];
+    orderProducts.map(async (orderProduct: any) => {
+      const product = latestProducts.find(
+        (product: any) => product.id === orderProduct.productId
+      );
+
+      orders.push({
+        orderId: orderProduct.orderId,
+        createdAt: product.createdAt,
+        id: product.id,
+        name: product.name,
+        details: {
+          price: product.details.price,
+          description: product.details.description,
+          color: product.details.color,
+        },
+        stock: product.stock,
+      });
     });
 
     res.json(orders);
