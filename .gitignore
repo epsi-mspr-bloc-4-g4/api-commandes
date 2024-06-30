@@ -42,3 +42,4 @@ test/*.js
 .env
 
 prisma/generated
+prisma/migrations

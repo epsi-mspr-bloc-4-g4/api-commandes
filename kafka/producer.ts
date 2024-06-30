@@ -1,6 +1,6 @@
 import { producer } from "./kafkaconfig";
 
-export const produceMessage = async (topic: string, message: string) => {
+export const produceMessage = async (topic: string, message: any) => {
   await producer.connect();
   await producer.send({
     topic,
@@ -16,9 +16,7 @@ export const fetchProductsForOrder = async (orderId: string) => {
     // Example message sending
     await producer.send({
       topic: "order-products-fetch",
-      messages: [
-        { key: "orderId", value: JSON.stringify({ orderId }) }
-      ]
+      messages: [{ key: "orderId", value: JSON.stringify({ orderId }) }],
     });
 
     // Disconnect the producer when finished sending messages

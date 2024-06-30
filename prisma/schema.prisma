@@ -24,7 +24,7 @@ model OrderProduct {
   orderId   Int @map("order_id")
   productId Int @map("product_id")
 
-  order Order @relation(fields: [orderId], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@id([orderId, productId])
   @@map("order_product")
