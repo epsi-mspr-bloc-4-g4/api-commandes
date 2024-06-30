@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="C:\Users\fplan\Desktop\Examen_Epsi\mspr_bloc_4\API-Commandes\test\general.test.ts">
+    <testCase name="Order API endpoints integration tests GET /api/orders : should return 200 and an array of orders" duration="69">
+      <failure message="AggregateError: "><![CDATA[AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5)]]></failure>
+    </testCase>
+    <testCase name="Order API endpoints integration tests POST /api/orders : should create a new order and return 201" duration="5">
+      <failure message="AggregateError: "><![CDATA[AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5)]]></failure>
+    </testCase>
+    <testCase name="Order API endpoints integration tests DELETE /api/orders/:id : should return 200 at first, and 404 for the second time" duration="3">
+      <failure message="AggregateError: "><![CDATA[AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5)]]></failure>
+    </testCase>
+  </file>
+</testExecutions>
