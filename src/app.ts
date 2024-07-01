@@ -1,3 +1,4 @@
+import './../instrument.js';
 import express from "express";
 import * as dotevnv from "dotenv";
 import cors from "cors";
