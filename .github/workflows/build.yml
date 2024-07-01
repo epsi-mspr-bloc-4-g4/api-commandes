@@ -9,6 +9,12 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:123@localhost:5434/epsi_orders?schema=public
+      KAFKA_SERVER: "82.66.231.166:39092"
+      DEFAULT_SET_TIMEOUT: 5000
+      PORT: 7000
+
     services:
       postgres:
         image: postgres:latest

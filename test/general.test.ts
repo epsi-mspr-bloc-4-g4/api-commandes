@@ -1,5 +1,5 @@
 import request from 'supertest';
-const baseURL = 'http://localhost:7000';
+import app from '../src/app';
 
 describe('Order API endpoints integration tests', () => {
   it("POST /api/orders : should create a new order and return 201", async () => {
