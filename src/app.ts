@@ -3,7 +3,7 @@ import * as dotevnv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import orderRouter from "./routes/order.routes";
-import { errorHandler } from "./middlewares/errorHandler";
+import * as Sentry from "@sentry/node";
 
 dotevnv.config();
 
@@ -14,6 +14,12 @@ if (!process.env.PORT) {
 const PORT = parseInt(process.env.PORT as string, 10);
 
 const app = express();
+
+Sentry.setupExpressErrorHandler(app);
+
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
