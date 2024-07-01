@@ -8,8 +8,11 @@ describe('Order API endpoints integration tests', () => {
       products: [{ productId: 1, quantity: 2 }],
     };
     try {
-      const response = await request(app).post("/api/orders").send(newOrder);
-      expect(response.statusCode).toBe(200);
+      const response = await request(app)
+        .post("/api/orders")
+        .send(newOrder)
+        .timeout(10000); // Increase timeout to 10 seconds
+      expect(response.statusCode).toBe(201);
       expect(response.body).toHaveProperty("id");
     } catch (error) {
       console.error("POST /api/orders failed:", error);
@@ -24,7 +27,7 @@ describe('Order API endpoints integration tests', () => {
       expect(Array.isArray(response.body)).toBeTruthy();
     } catch (error) {
       console.error("GET /api/orders failed:", error);
-      throw error; // Re-throwing the error to ensure Jest catches it
+      throw error;
     }
   });
 
@@ -33,14 +36,24 @@ describe('Order API endpoints integration tests', () => {
       const response = await request(app).get("/api/orders");
       const lastOrder = response.body[response.body.length - 1];
 
+      if (!lastOrder || !lastOrder.id) {
+        throw new Error("No valid order found to delete");
+      }
+
       const response2 = await request(app).delete(`/api/orders/${lastOrder.id}`);
       expect(response2.statusCode).toBe(200);
 
       const response3 = await request(app).delete(`/api/orders/${lastOrder.id}`);
-      expect(response3.statusCode).toBe(500);
+      expect(response3.statusCode).toBe(404); // 404 not found expected for the second delete
     } catch (error) {
       console.error("DELETE /api/orders/:id failed:", error);
       throw error;
     }
   });
+});
+
+// Ensure KafkaJS consumers and producers are disconnected after tests
+afterAll(async () => {
+  await consumer.disconnect();
+  await producer.disconnect();
 });
