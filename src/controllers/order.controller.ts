@@ -40,7 +40,14 @@ const sendCurrentOrdersToKafka = async (latestProducts: any[]) => {
     }
   });
 
-  await produceMessage("client-orders-fetch", ordersToKafka);
+  if (ordersToKafka.length > 0) {
+    await produceMessage("client-orders-fetch", ordersToKafka);
+  } else {
+    console.log("No orders to send to Kafka");
+    const messages = await consumeMessages("order-products-fetch");
+    const latestProducts = JSON.parse(messages[messages.length - 1].value);
+    await sendCurrentOrdersToKafka(latestProducts);
+  }
 };
 
 export const createOrder = async (req: Request, res: Response) => {
@@ -243,15 +250,18 @@ export const updateOrderProducts = async (req: Request, res: Response) => {
         orderId: Number(orderId),
       },
     }),
-      filteredProducts.map(async (product: any) => {
-        await prisma.orderProduct.create({
-          data: {
-            orderId: Number(orderId),
-            productId: product.id,
-          },
-        });
-      }),
-      await sendCurrentOrdersToKafka(latestProducts);
+      await prisma.$transaction(
+        filteredProducts.map((product: any) => {
+          return prisma.orderProduct.create({
+            data: {
+              orderId: Number(orderId),
+              productId: product.id,
+            },
+          });
+        })
+      );
+
+    await sendCurrentOrdersToKafka(latestProducts);
 
     res.json(
       "Les produits de la commande avec l'id " +
@@ -260,7 +270,7 @@ export const updateOrderProducts = async (req: Request, res: Response) => {
         filteredProducts.map((product: any) => product.name)
     );
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Something went wrong " + error });
     console.log(error);
   }
 };
@@ -274,20 +284,22 @@ export const deleteOrderProduct = async (req: Request, res: Response) => {
 
     const latestProducts = JSON.parse(messages[messages.length - 1].value);
 
-    const filteredProducts = latestProducts.filter((product: any) =>
-      orderedProductsName.includes(product.name)
+    const filteredProducts = latestProducts.filter(
+      (product: any) => orderedProductsName == product.name
     );
 
-    filteredProducts.map(async (product: any) => {
-      await prisma.orderProduct.delete({
-        where: {
-          orderId_productId: {
-            orderId: Number(orderId),
-            productId: product.id,
+    await prisma.$transaction(
+      filteredProducts.map((product: any) => {
+        return prisma.orderProduct.delete({
+          where: {
+            orderId_productId: {
+              orderId: Number(orderId),
+              productId: product.id,
+            },
           },
-        },
-      });
-    });
+        });
+      })
+    );
 
     await sendCurrentOrdersToKafka(latestProducts);
 
