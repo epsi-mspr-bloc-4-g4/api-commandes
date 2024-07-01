@@ -17,24 +17,27 @@ const sendCurrentOrdersToKafka = async (latestProducts: any[]) => {
       order: true,
     },
   });
+
   orderProducts.map(async (orderProduct: any) => {
     const product = latestProducts.find(
       (product: any) => product.id === orderProduct.productId
     );
 
-    ordersToKafka.push({
-      customerId: orderProduct.order.customerId,
-      orderId: orderProduct.orderId,
-      createdAt: product.createdAt,
-      id: product.id,
-      name: product.name,
-      details: {
-        price: product.details.price,
-        description: product.details.description,
-        color: product.details.color,
-      },
-      stock: product.stock,
-    });
+    if (product) {
+      ordersToKafka.push({
+        customerId: orderProduct.order.customerId,
+        orderId: orderProduct.orderId,
+        createdAt: product.createdAt,
+        id: product.id,
+        name: product.name,
+        details: {
+          price: product.details.price,
+          description: product.details.description,
+          color: product.details.color,
+        },
+        stock: product.stock,
+      });
+    }
   });
 
   await produceMessage("client-orders-fetch", ordersToKafka);
@@ -101,18 +104,20 @@ export const getAllOrders = async (req: Request, res: Response) => {
         (product: any) => product.id === orderProduct.productId
       );
 
-      orders.push({
-        orderId: orderProduct.orderId,
-        createdAt: product.createdAt,
-        id: product.id,
-        name: product.name,
-        details: {
-          price: product.details.price,
-          description: product.details.description,
-          color: product.details.color,
-        },
-        stock: product.stock,
-      });
+      if (product) {
+        orders.push({
+          orderId: orderProduct.orderId,
+          createdAt: product.createdAt,
+          id: product.id,
+          name: product.name,
+          details: {
+            price: product.details.price,
+            description: product.details.description,
+            color: product.details.color,
+          },
+          stock: product.stock,
+        });
+      }
     });
 
     res.json(orders);

@@ -21,7 +21,7 @@ export const consumeMessages = async (
   }
 
   await consumer.connect();
-  await consumer.subscribe({ topic });
+  await consumer.subscribe({ topic: topic, fromBeginning: true });
 
   console.log("START?");
   isRunning = true;
