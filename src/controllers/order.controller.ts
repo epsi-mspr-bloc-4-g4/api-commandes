@@ -10,7 +10,7 @@ type InputOrder = {
   orderedProductsName: string[];
 };
 
-const sendCurrentOrdersToKafka = async (latestProducts: any[]) => {
+export const sendCurrentOrdersToKafka = async (latestProducts: any[]) => {
   let ordersToKafka: any[] = [];
   const orderProducts = await prisma.orderProduct.findMany({
     include: {
@@ -44,9 +44,6 @@ const sendCurrentOrdersToKafka = async (latestProducts: any[]) => {
     await produceMessage("client-orders-fetch", ordersToKafka);
   } else {
     console.log("No orders to send to Kafka");
-    const messages = await consumeMessages("order-products-fetch");
-    const latestProducts = JSON.parse(messages[messages.length - 1].value);
-    await sendCurrentOrdersToKafka(latestProducts);
   }
 };
 
