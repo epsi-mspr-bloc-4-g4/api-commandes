@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { produceMessage } from "../../kafka/producer";
-import { consumeMessages } from "../../kafka/consumer";
+import { produceMessage } from "../kafka/producer";
+import { consumeMessages } from "../kafka/consumer";
 
 const prisma = new PrismaClient();
 

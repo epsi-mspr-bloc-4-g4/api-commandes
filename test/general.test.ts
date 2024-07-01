@@ -1,9 +1,9 @@
-import { consumeMessages } from "../kafka/consumer";
+import { consumeMessages } from "../src/kafka/consumer";
 import request from "supertest";
 import app from "../src/app";
 import { PrismaClient } from "@prisma/client";
 
-jest.mock("../kafka/consumer");
+jest.mock("../src/kafka/consumer");
 
 const prisma = new PrismaClient();
 
