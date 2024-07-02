@@ -77,3 +77,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}/api-commandes:latest
+          
+      - name: Call Portainer Webhook
+        run: curl -X POST https://portainer.flusin.fr/api/stacks/webhooks/a37bc215-f0fb-46de-bd44-6be2512d1320
